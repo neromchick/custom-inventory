@@ -1,0 +1,16 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "WebApi | v1",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://localhost:7117"
+    },
+    {
+      "url": "http://localhost:5013"
+    }
+  ],
+  "paths": { }
+}
