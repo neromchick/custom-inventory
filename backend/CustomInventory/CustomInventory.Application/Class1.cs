@@ -1,4 +1,4 @@
-﻿namespace Application
+﻿namespace CustomInventory.Application
 {
     public class Class1
     {

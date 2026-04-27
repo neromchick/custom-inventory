@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="CustomInventory.API/CustomInventory.API.csproj" />
+  <Project Path="CustomInventory.Application/CustomInventory.Application.csproj" />
+  <Project Path="CustomInventory.Domain/CustomInventory.Domain.csproj" />
+  <Project Path="CustomInventory.Infrastructure/CustomInventory.Infrastructure.csproj" />
+</Solution>
