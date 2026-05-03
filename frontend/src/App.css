@@ -1,0 +1,47 @@
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  border-bottom: 1px solid #ccc;
+  gap: 1rem;
+}
+
+/* Адаптивность для поиска[cite: 1] */
+.search-bar { flex-grow: 1; max-width: 500px; }
+.search-bar input { width: 100%; padding: 0.5rem; border-radius: 4px; border: 1px solid #ddd; }
+
+.global-toolbar {
+  position: sticky;
+  bottom: 0;
+  background: var(--toolbar-bg);
+  padding: 1rem;
+  display: flex;
+  justify-content: space-around;
+  border-top: 1px solid #ccc;
+}
+
+/* Переменные для тем[cite: 1] */
+[data-theme='light'] {
+  --bg: #ffffff;
+  --text: #000000;
+  --toolbar-bg: #f9f9f9;
+}
+[data-theme='dark'] {
+  --bg: #1a1a1a;
+  --text: #ffffff;
+  --toolbar-bg: #2d2d2d;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  margin: 0;
+  font-family: sans-serif;
+}
