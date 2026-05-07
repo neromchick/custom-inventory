@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 
+import { Button } from '@/components/ui/button'
+
 const HomePage = () => <div className='p-4'>Главная: List of inventories</div>
 const DashBoard = () => <div className='p-4'>Личный кабинет: My inventories</div>
 const AdminPanel = () => <div className='p-4'>Админка: Moderating users</div>

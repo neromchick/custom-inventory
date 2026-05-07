@@ -1,27 +1,38 @@
+using CustomInventory.Application.Interfaces;
+using CustomInventory.Application.Mappings;
+using CustomInventory.Application.Services;
+using CustomInventory.Infrastructure.Data;
+using CustomInventory.Infrastructure.Repositories;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
+builder.Services.AddScoped<IInventoryService, InventoryService>();
+
+builder.Services.AddAutoMapper(typeof(InventoryProfile).Assembly);
+
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
 
+app.UseSwagger();
+app.UseSwaggerUI();
+
 app.UseAuthorization();
 
 app.MapControllers();
-
-app.Run(async context =>
-{
-    var response = context.Response;
-    await response.WriteAsync("Hello world!!!");
-});     
 
 app.Run();

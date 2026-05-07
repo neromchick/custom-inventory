@@ -1,21 +1,17 @@
-﻿namespace CustomInventory.Domain.Entities
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace CustomInventory.Application.DTOs
 {
-    public class Inventory
+    public class CreateInventoryDto
     {
-        public Guid Id { get; set; }
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public string? ImageUrl { get; set; }
-        public bool IsPublic { get; set; } = false;
-
-        public string CreatorId { get; set; } = string.Empty;
-
+        public bool IsPublic { get; set; }
         public int? CategoryId { get; set; }
-        public Category? Category { get; set; }
-        public string[] Tags { get; set; } = []; 
-
-        public DateTime CreatedAt { get; set; }  
-        public DateTime UpdatedAt { get; set; } 
+        public string[] Tags { get; set; } = [];
 
         // Custom string fields
         public bool CustomString1State { get; set; }
@@ -25,7 +21,7 @@
         public bool CustomString3State { get; set; }
         public string? CustomString3Name { get; set; }
 
-        // Custom text (multiline) fields
+        // Custom text fields
         public bool CustomText1State { get; set; }
         public string? CustomText1Name { get; set; }
         public bool CustomText2State { get; set; }
@@ -56,8 +52,5 @@
         public string? CustomLink2Name { get; set; }
         public bool CustomLink3State { get; set; }
         public string? CustomLink3Name { get; set; }
-
-        // Navigation
-        public List<Item> Items { get; set; } = [];
     }
 }
