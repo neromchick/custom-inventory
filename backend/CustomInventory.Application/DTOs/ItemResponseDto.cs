@@ -1,12 +1,16 @@
-﻿namespace CustomInventory.Domain.Entities
+﻿using CustomInventory.Domain.Entities;
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace CustomInventory.Application.DTOs
 {
-    public class Item
+    public class ItemResponseDto
     {
         public Guid Id { get; set; }
         // public string CustomId { get; set; } = string.Empty;
-
+        
         public Guid InventoryId { get; set; }
-        public Inventory Inventory { get; set; } = null!;
 
         public string CreatorId { get; set; } = string.Empty;
 

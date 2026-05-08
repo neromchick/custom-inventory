@@ -16,8 +16,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
+builder.Services.AddScoped<IItemRepository, ItemRepository>();
+builder.Services.AddScoped<IItemService, ItemService>();
 
-builder.Services.AddAutoMapper(typeof(InventoryProfile).Assembly);
+builder.Services.AddAutoMapper(cfg => { }, typeof(InventoryProfile).Assembly);
 
 builder.Services.AddSwaggerGen();
 

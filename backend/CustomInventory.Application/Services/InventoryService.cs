@@ -1,12 +1,9 @@
-﻿using AutoMapper;
+﻿    using AutoMapper;
 using CustomInventory.Application.DTOs;
 using CustomInventory.Application.Interfaces;
-using CustomInventory.Application.Mappings;
 using CustomInventory.Domain.Entities;
 using CustomInventory.Infrastructure.Repositories;
-using System;
-using System.Collections.Generic;
-using System.Text;
+
 
 namespace CustomInventory.Application.Services
 {

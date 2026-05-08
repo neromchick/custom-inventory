@@ -7,7 +7,7 @@ namespace CustomInventory.Infrastructure.Repositories
         Task<Inventory> CreateAsync(Inventory inventory);
         Task<bool> DeleteAsync(Guid id);
         Task<List<Inventory>> GetAllAsync();
-        Task<Inventory> GetByIdAsync(Guid id);
+        Task<Inventory?> GetByIdAsync(Guid id);
         Task<Inventory> UpdateAsync(Inventory inventory);
     }
 }

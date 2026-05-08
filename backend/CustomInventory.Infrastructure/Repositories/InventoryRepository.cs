@@ -1,9 +1,6 @@
 ﻿using CustomInventory.Domain.Entities;
 using CustomInventory.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace CustomInventory.Infrastructure.Repositories
 {
@@ -22,11 +19,11 @@ namespace CustomInventory.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<Inventory> GetByIdAsync(Guid id)
+        public async Task<Inventory?> GetByIdAsync(Guid id)
         {
             return await _context.Inventories
                 .Include(i => i.Category)
-                .FirstAsync(i => i.Id == id);
+                .FirstOrDefaultAsync(i => i.Id == id);
         }
 
         public async Task<Inventory> CreateAsync(Inventory inventory)
@@ -45,7 +42,7 @@ namespace CustomInventory.Infrastructure.Repositories
 
         public async Task<bool> DeleteAsync(Guid id)
         {
-            var inventory = await _context.Inventories.FirstAsync(i => i.Id == id);
+            var inventory = await _context.Inventories.FirstOrDefaultAsync(i => i.Id == id);
             if (inventory == null) return false;
             _context.Inventories.Remove(inventory);
             await _context.SaveChangesAsync();
