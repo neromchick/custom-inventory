@@ -39,8 +39,8 @@ namespace CustomInventory.Application.Services
             item.Id = Guid.NewGuid();
             item.InventoryId = inventoryId;
             item.CreatorId = creatorId;
-            item.CreatedAt = DateTime.Now;
-            item.UpdatedAt = DateTime.Now;
+            item.CreatedAt = DateTime.UtcNow;
+            item.UpdatedAt = DateTime.UtcNow;
 
             var created = await _repository.CreateAsync(item);
 

@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace CustomInventory.Domain.Entities
+namespace CustomInventory.Application.DTOs
 {
-    public class Category
+    public class CreateCategoryDto
     {
-        public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
     }
 }

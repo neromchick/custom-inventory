@@ -10,8 +10,8 @@
 
         public string CreatorId { get; set; } = string.Empty;
 
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } 
+        public DateTime UpdatedAt { get; set; } 
 
         // Custom string values
         public string? CustomString1Value { get; set; }

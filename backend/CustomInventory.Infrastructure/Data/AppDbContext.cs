@@ -26,6 +26,10 @@ namespace CustomInventory.Infrastructure.Data
             modelBuilder.Entity<Inventory>()
                 .Property(i => i.Tags)
                 .HasColumnType("text[]");
+
+            modelBuilder.Entity<Category>()
+                .HasIndex(c => c.Name)
+                .IsUnique();
         }
     }
 }
