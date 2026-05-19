@@ -1,9 +1,12 @@
 ﻿using CustomInventory.Domain.Entities;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+
 
 namespace CustomInventory.Infrastructure.Data
 {
-    public class AppDbContext : DbContext
+    public class AppDbContext : IdentityDbContext<AppUser>
     {
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options) { }
@@ -14,22 +17,8 @@ namespace CustomInventory.Infrastructure.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Item>()
-                .HasIndex(i => new { i.InventoryId, i.Id })
-                .IsUnique();
-
-            modelBuilder.Entity<Item>()
-                .HasOne(i => i.Inventory)
-                .WithMany(inv => inv.Items)
-                .HasForeignKey(i => i.InventoryId);
-
-            modelBuilder.Entity<Inventory>()
-                .Property(i => i.Tags)
-                .HasColumnType("text[]");
-
-            modelBuilder.Entity<Category>()
-                .HasIndex(c => c.Name)
-                .IsUnique();
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
         }
     }
 }

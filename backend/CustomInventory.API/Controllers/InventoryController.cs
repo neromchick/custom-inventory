@@ -1,11 +1,13 @@
 ﻿using CustomInventory.Application.DTOs;
 using CustomInventory.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CustomInventory.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class InventoryController : ControllerBase
     {
         private readonly IInventoryService _service;
