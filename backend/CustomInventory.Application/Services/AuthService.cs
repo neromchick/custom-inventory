@@ -26,7 +26,11 @@ public class AuthService : IAuthService
         var result = await _userManager.CreateAsync(user, dto.Password);
         if (!result.Succeeded) return null;
 
-        return _jwtTokenService.GenerateToken(user);
+        await _userManager.AddToRoleAsync(user, "User"); // CHECKCHECKCHECKCHECKCHECKCHECK
+
+        var roles = await _userManager.GetRolesAsync(user);
+
+        return _jwtTokenService.GenerateToken(user, roles);
     }
 
     public async Task<string?> LoginAsync(LoginDto dto)
@@ -37,6 +41,33 @@ public class AuthService : IAuthService
         var isValid = await _userManager.CheckPasswordAsync(user, dto.Password);
         if (!isValid) return null;
 
-        return _jwtTokenService.GenerateToken(user);
+        var roles = await _userManager.GetRolesAsync(user);
+
+        return _jwtTokenService.GenerateToken(user, roles);
+    }
+
+    public async Task<string> LoginOrRegisterExternalAsync(string email, string name)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+
+        if(user == null)
+        {
+            user = new AppUser
+            {
+                UserName = name,
+                Email = email,
+                EmailConfirmed = true
+            };
+
+            var createResult = await _userManager.CreateAsync(user);
+            if (!createResult.Succeeded)
+                throw new Exception("не удалось создать пользователя через внешнюю авторизацию");
+
+            await _userManager.AddToRoleAsync(user, "User");
+        }
+
+        var roles = await _userManager.GetRolesAsync(user);
+
+        return _jwtTokenService.GenerateToken(user, roles);
     }
 }

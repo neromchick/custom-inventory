@@ -1,4 +1,5 @@
-﻿using CustomInventory.Application.DTOs;
+﻿using CustomInventory.API.Extensions;
+using CustomInventory.Application.DTOs;
 using CustomInventory.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -32,7 +33,7 @@ namespace CustomInventory.API.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateAsync(Guid inventoryId, CreateItemDto dto)
         {
-            var creatorId = "temp-user-id";
+            var creatorId = User.GetUserId();
             var created = await _service.CreateAsync(inventoryId, dto, creatorId);
             return Ok(created);
         }

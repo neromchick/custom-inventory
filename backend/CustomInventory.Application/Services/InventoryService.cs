@@ -1,8 +1,9 @@
-﻿    using AutoMapper;
+﻿using AutoMapper;
 using CustomInventory.Application.DTOs;
 using CustomInventory.Application.Interfaces;
 using CustomInventory.Domain.Entities;
 using CustomInventory.Infrastructure.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 
 namespace CustomInventory.Application.Services
@@ -18,16 +19,30 @@ namespace CustomInventory.Application.Services
             _mapper = mapper;
         }
 
-        public async Task<List<InventoryResponseDto>> GetAllAsync()
+        public async Task<List<InventoryResponseDto>> GetAllAsync(string? currentUserId, bool isAdmin)
         {
-            var inventories = await _repository.GetAllAsync();
+            var inventories = await _repository.GetAllAsync(currentUserId, isAdmin);
             return _mapper.Map<List<InventoryResponseDto>>(inventories);
         }
 
-        public async Task<InventoryResponseDto> GetByIdAsync(Guid id)
+        public async Task<InventoryResponseDto> GetByIdAsync(Guid id, string? currentUserId, bool isAdmin)
         {
             var inventory = await _repository.GetByIdAsync(id);
+
+            if (inventory == null)
+                throw new KeyNotFoundException("Inventory not found");
+
+            if (!inventory.IsPublic && inventory.CreatorId != currentUserId && !isAdmin)
+                throw new UnauthorizedAccessException("This inventory is private.");
+
             return _mapper.Map<InventoryResponseDto>(inventory);
+        }
+
+        public async Task<List<InventoryResponseDto>> GetByUserIdAsync(string userId)
+        {
+            var inventories = await _repository.GetByUserIdAsync(userId);
+
+            return _mapper.Map<List<InventoryResponseDto>>(inventories);
         }
 
         public async Task<InventoryResponseDto> CreateAsync(CreateInventoryDto dto, string creatorId)
@@ -44,10 +59,15 @@ namespace CustomInventory.Application.Services
             return _mapper.Map<InventoryResponseDto>(inventory);
         }
 
-        public async Task<InventoryResponseDto?> UpdateAsync(Guid id, CreateInventoryDto dto)
+        public async Task<InventoryResponseDto?> UpdateAsync(Guid id, CreateInventoryDto dto, string currentUserId, bool isAdmin)
         {
             var inventory = await _repository.GetByIdAsync(id);
             if (inventory == null) return null;
+
+            if (inventory.CreatorId != currentUserId && !isAdmin)
+            {
+                throw new UnauthorizedAccessException("Недостаточно прав для редактирования");
+            }
 
             _mapper.Map(dto, inventory);
             inventory.UpdatedAt = DateTime.UtcNow;
@@ -56,9 +76,17 @@ namespace CustomInventory.Application.Services
 
             return _mapper.Map<InventoryResponseDto>(inventory);
         }
-
-        public async Task<bool> DeleteAsync(Guid id)
+        
+        public async Task<bool> DeleteAsync(Guid id, string currentUserId, bool isAdmin)
         {
+            var inventory = await _repository.GetByIdAsync(id);
+
+            if (inventory == null)
+                throw new Exception("Инвентарь не найден");
+
+            if (!isAdmin && inventory.CreatorId != currentUserId)
+                throw new Exception("Недостаточно прав для удаления инвентаря");
+
             return await _repository.DeleteAsync(id);
         }
     }

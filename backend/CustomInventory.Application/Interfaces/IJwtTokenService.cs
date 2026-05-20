@@ -7,6 +7,6 @@ namespace CustomInventory.Application.Interfaces
 {
     public interface IJwtTokenService
     {
-        string GenerateToken(AppUser user);
+        string GenerateToken(AppUser user, IList<string> roles);
     }   
 }

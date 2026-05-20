@@ -12,9 +12,14 @@ namespace CustomInventory.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<List<Inventory>> GetAllAsync()
+        public async Task<List<Inventory>> GetAllAsync(string? currentUserId, bool isAdmin)
         {
-            return await _context.Inventories
+            var query = _context.Inventories.AsQueryable();
+
+            if (!isAdmin)
+                query = query.Where(i => i.IsPublic || i.CreatorId == currentUserId);
+
+            return await query
                 .Include(i => i.Category)
                 .ToListAsync();
         }
@@ -24,6 +29,14 @@ namespace CustomInventory.Infrastructure.Repositories
             return await _context.Inventories
                 .Include(i => i.Category)
                 .FirstOrDefaultAsync(i => i.Id == id);
+        }
+
+        public async Task<List<Inventory>> GetByUserIdAsync(string userId)
+        {
+            return await _context.Inventories
+                .Where(i => i.CreatorId == userId)
+                .Include(i => i.Category)
+                .ToListAsync();
         }
 
         public async Task<Inventory> CreateAsync(Inventory inventory)
