@@ -35,6 +35,12 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<CustomInventory.Infrastructure.Data.AppDbContext>();
+    await dbContext.Database.MigrateAsync();
+}
 await app.SeedRolesAsync();
 
 app.Run();
