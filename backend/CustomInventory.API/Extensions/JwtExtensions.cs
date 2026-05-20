@@ -28,19 +28,18 @@ namespace CustomInventory.API.Extensions
                         Encoding.UTF8.GetBytes(configuration["Jwt:Secret"]!))
                 };
             })
-            .AddCookie(IdentityConstants.ExternalScheme)
             .AddGoogle(options =>
             {
                 options.ClientId = configuration["Authentication:Google:ClientId"]!;
                 options.ClientSecret = configuration["Authentication:Google:ClientSecret"]!;
-                options.SignInScheme = IdentityConstants.ExternalScheme; 
+                options.SignInScheme = IdentityConstants.ExternalScheme;
             })
             .AddGitHub(options =>
             {
                 options.ClientId = configuration["Authentication:GitHub:ClientId"]!;
                 options.ClientSecret = configuration["Authentication:GitHub:ClientSecret"]!;
                 options.SignInScheme = IdentityConstants.ExternalScheme;
-                options.Scope.Add("user:email"); 
+                options.Scope.Add("user:email");
             });
 
             return services;
