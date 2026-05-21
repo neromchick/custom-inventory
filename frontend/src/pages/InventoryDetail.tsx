@@ -11,7 +11,7 @@ import type { DropResult } from '@hello-pangea/dnd';
 type FieldType = 'integer' | 'string' | 'text' | 'boolean' | 'date';
 
 interface CustomField {
-  id: string;
+  id: string; // Будет иметь вид customString1, customText3 и т.д.
   name: string;
   type: FieldType;
 }
@@ -28,10 +28,22 @@ interface InventoryData {
   categoryId?: number;
   isPublic: boolean;
   imageUrl?: string;
+  [key: string]: unknown; // Разрешаем динамические ключи конфигурации полей
+}
+
+function fieldTypeToPrefix(type: FieldType): string {
+  switch (type) {
+    case 'string':  return 'customString';
+    case 'text':    return 'customText';
+    case 'integer': return 'customInt';
+    case 'boolean': return 'customBool';
+    case 'date':    return 'customLink';
+    default: return 'customString';
+  }
 }
 
 export default function InventoryDetail() {
-  const { id } = useParams<{ id: string }>(); // Это наш inventoryId
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   
   // Общие состояния
@@ -66,41 +78,94 @@ export default function InventoryDetail() {
     setTimeout(() => setNotification(null), 4000);
   };
 
-  // 1. ЗАГРУЗКА ДАННЫХ ИЗ БАЗЫ
+  // 1. ЗАГРУЗКА ДАННЫХ ИЗ БАЗЫ (ПОСЛЕДОВАТЕЛЬНО)
   useEffect(() => {
+    let isMounted = true;
     const token = localStorage.getItem('token');
     const headers = token ? { 'Authorization': `Bearer ${token}` } : undefined;
 
-    Promise.all([
-      fetch(`https://custom-inventory.onrender.com/api/inventory/${id}`, { headers }).then(res => {
-        if (!res.ok) throw new Error();
-        return res.json();
-      }),
-      fetch(`https://custom-inventory.onrender.com/api/inventories/${id}/items`, { headers }).then(res => res.ok ? res.json() : [])
-    ])
-    .then(([inventoryData, itemsData]) => {
-      setInventory(inventoryData);
-      setTitle(inventoryData.title || '');
-      setDescription(inventoryData.description || '');
-      setIsPublic(inventoryData.isPublic !== undefined ? inventoryData.isPublic : true);
-      setPreviewUrl(inventoryData.imageUrl || '');
-      
-      if (inventoryData.customFields) {
-        setFields(inventoryData.customFields);
+    const loadData = async () => {
+      try {
+        // Шаг A: Загружаем конфигурацию инвентаря
+        const inventoryRes = await fetch(`https://custom-inventory.onrender.com/api/inventory/${id}`, { headers });
+        if (!inventoryRes.ok) throw new Error("Ошибка при загрузке инвентаря");
+        const inventoryData: InventoryData = await inventoryRes.json();
+
+        if (!isMounted) return;
+
+        setInventory(inventoryData);
+        setTitle(inventoryData.title || '');
+        setDescription(inventoryData.description || '');
+        setIsPublic(inventoryData.isPublic !== undefined ? inventoryData.isPublic : true);
+        setPreviewUrl(inventoryData.imageUrl || '');
+        
+        // Маппинг кастомных полей из реальных настроек бэкенда
+        const loadedFields: CustomField[] = [];
+        const typeMap: Array<{ type: FieldType; prefix: string }> = [
+          { type: 'string', prefix: 'customString' },
+          { type: 'text',   prefix: 'customText' },
+          { type: 'integer', prefix: 'customInt' },
+          { type: 'boolean', prefix: 'customBool' },
+          { type: 'date',   prefix: 'customLink' },
+        ];
+
+        typeMap.forEach(({ type, prefix }) => {
+          for (let i = 1; i <= 3; i++) {
+            const stateKey = `${prefix}${i}State`;
+            const nameKey  = `${prefix}${i}Name`;
+            if (inventoryData[stateKey] === true && inventoryData[nameKey]) {
+              loadedFields.push({
+                id: `${prefix}${i}`, // Фиксированный ID вида "customString1"
+                name: inventoryData[nameKey] as string,
+                type,
+              });
+            }
+          }
+        });
+        setFields(loadedFields);
+
+        // Шаг B: Загружаем предметы только ПОСЛЕ того, как определили структуру полей
+        const itemsRes = await fetch(`https://custom-inventory.onrender.com/api/inventories/${id}/items`, { headers });
+        const itemsData = itemsRes.ok ? await itemsRes.json() : [];
+
+        if (!isMounted) return;
+
+        // Шаг C: Маппинг значений каждого предмета из плоской структуры в values
+        const mappedItems = (itemsData as Record<string, unknown>[]).map(raw => {
+          const itemValues: Record<string, string | number | boolean> = {};
+          loadedFields.forEach(f => {
+            const val = raw[`${f.id}Value`];
+            if (val !== undefined && val !== null) {
+              itemValues[f.id] = val as string | number | boolean;
+            }
+          });
+          return {
+            id: raw.id as string,
+            values: itemValues
+          };
+        });
+
+        setItems(mappedItems);
+        setLoading(false);
+      } catch (err) {
+        console.error(err);
+        if (!isMounted) return;
+
+        // Локальный режим на случай недоступности бэкенда
+        setInventory({ 
+          id: id || '1', title: `Инвентарь #${id}`, description: 'Локальный режим отладки', isPublic: true,
+          imageUrl: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=400' 
+        });
+        setPreviewUrl('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=400');
+        setLoading(false);
       }
-      
-      setItems(itemsData);
-      setLoading(false);
-    })
-    .catch((err) => {
-      console.error(err);
-      setInventory({ 
-        id: id || '1', title: `Инвентарь #${id}`, description: 'Локальный режим отладки', isPublic: true,
-        imageUrl: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=400' 
-      });
-      setPreviewUrl('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=400');
-      setLoading(false);
-    });
+    };
+
+    loadData();
+
+    return () => {
+      isMounted = false;
+    };
   }, [id]);
 
   const handleDynamicFormChange = (fieldId: string, value: string | number | boolean) => {
@@ -112,38 +177,51 @@ export default function InventoryDetail() {
     e.preventDefault();
     const token = localStorage.getItem('token');
     
-    const payload = {
-      inventoryId: id,
-      values: formValues
-    };
+    // Преобразуем плоские значения в формат `{ customString1Value: "..." }`
+    const itemPayload: Record<string, unknown> = {};
+    for (const [fieldId, value] of Object.entries(formValues)) {
+      itemPayload[`${fieldId}Value`] = value;
+    }
 
     try {
       if (editingItemId) {
-        // РЕЖИМ РЕДАКТИРОВАНИЯ (ПОЛНОСТЬЮ ИСПРАВЛЕННЫЙ URL ПОД ТВОЙ C# КОНТРОЛЛЕР)
         const res = await fetch(`https://custom-inventory.onrender.com/api/inventories/${id}/items/${editingItemId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify(payload)
+          body: JSON.stringify(itemPayload) 
         });
         if (!res.ok) throw new Error();
 
         setItems(items.map(item => item.id === editingItemId ? { ...item, values: formValues } : item));
         showNotification("Запись успешно обновлена в БД!");
       } else {
-        // РЕЖИМ СОЗДАНИЯ (POST)
         const res = await fetch(`https://custom-inventory.onrender.com/api/inventories/${id}/items`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify(payload)
+          body: JSON.stringify(itemPayload) 
         });
         if (!res.ok) throw new Error();
-        const createdItem: Item = await res.json();
+        
+        const rawCreatedItem = await res.json();
+
+        // Сразу маппим ответ бэкенда при добавлении в стейт
+        const createdValues: Record<string, string | number | boolean> = {};
+        fields.forEach(f => {
+          const val = rawCreatedItem[`${f.id}Value`];
+          if (val !== undefined && val !== null) {
+            createdValues[f.id] = val as string | number | boolean;
+          }
+        });
+
+        const createdItem: Item = {
+          id: rawCreatedItem.id as string,
+          values: createdValues
+        };
 
         setItems([...items, createdItem]);
         showNotification("Предмет добавлен в базу данных!");
       }
     } catch {
-      // Мягкий фолбэк, если бэкенд недоступен
       if (editingItemId) {
         setItems(items.map(item => item.id === editingItemId ? { ...item, values: formValues } : item));
         showNotification("Изменено локально (ошибка сети)", "success");
@@ -202,20 +280,50 @@ export default function InventoryDetail() {
     setSelectedItemIds(prev => checked ? [...prev, itemId] : prev.filter(id => id !== itemId));
   };
 
-  // 4. КОНСТРУКТОР ПОЛЕЙ (Мягкая заглушка, чтобы 404 не вешал приложение)
+  // 4. СОХРАНЕНИЕ СТРУКТУРЫ КАСТОМНЫХ ПОЛЕЙ
   const saveFieldsStructure = async (updatedFields: CustomField[]) => {
     const token = localStorage.getItem('token');
+
+    // Собираем тело запроса в формат, который понимает бэкенд
+    const body: Record<string, unknown> = {
+      title, description, isPublic, imageUrl: previewUrl,
+      // Сначала всё выключаем
+      customString1State: false, customString1Name: null,
+      customString2State: false, customString2Name: null,
+      customString3State: false, customString3Name: null,
+      customText1State: false, customText1Name: null,
+      customText2State: false, customText2Name: null,
+      customText3State: false, customText3Name: null,
+      customInt1State: false, customInt1Name: null,
+      customInt2State: false, customInt2Name: null,
+      customInt3State: false, customInt3Name: null,
+      customBool1State: false, customBool1Name: null,
+      customBool2State: false, customBool2Name: null,
+      customBool3State: false, customBool3Name: null,
+      customLink1State: false, customLink1Name: null,
+      customLink2State: false, customLink2Name: null,
+      customLink3State: false, customLink3Name: null,
+    };
+
+    // Включаем только те, что есть в updatedFields
+    const counters: Record<string, number> = {};
+    for (const field of updatedFields) {
+      const prefix = fieldTypeToPrefix(field.type);
+      counters[prefix] = (counters[prefix] || 0) + 1;
+      const n = counters[prefix];
+      body[`${prefix}${n}State`] = true;
+      body[`${prefix}${n}Name`]  = field.name;
+    }
+
     try {
-      const res = await fetch(`https://custom-inventory.onrender.com/api/inventories/${id}/fields`, {
+      await fetch(`https://custom-inventory.onrender.com/api/inventory/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ customFields: updatedFields })
+        body: JSON.stringify(body),
       });
-      if (res.status === 404) {
-        console.warn("Эндпоинт для сохранения полей каталога на бэкенде еще не реализован. Сохранено в стейте фронтенда.");
-      }
-    } catch (e) {
-      console.error("Не удалось синхронизировать структуру с сервером", e);
+    } catch (err) {
+      console.error(err);
+      showNotification("Не удалось обновить структуру на сервере.", "error");
     }
   };
 
@@ -230,14 +338,35 @@ export default function InventoryDetail() {
 
   const handleAddField = () => {
     if (!newFieldName.trim()) return;
-    const sameTypeCount = fields.filter(f => f.type === newFieldType).length;
 
-    if (sameTypeCount >= 3) {
+    // Считаем текущее количество полей выбранного типа
+    const sameTypeFields = fields.filter(f => f.type === newFieldType);
+    if (sameTypeFields.length >= 3) {
       showNotification(`Ошибка: Лимит! Нельзя добавить больше 3 полей типа "${newFieldType}"`, 'error');
       return;
     }
-    
-    const newField: CustomField = { id: `field-${Date.now()}`, name: newFieldName, type: newFieldType };
+
+    // Определяем свободный индекс (от 1 до 3) для этого префикса
+    const activeIndices = sameTypeFields.map(f => {
+      const match = f.id.match(/\d+$/);
+      return match ? parseInt(match[0], 10) : 0;
+    });
+
+    let targetIndex = 1;
+    for (let i = 1; i <= 3; i++) {
+      if (!activeIndices.includes(i)) {
+        targetIndex = i;
+        break;
+      }
+    }
+
+    const prefix = fieldTypeToPrefix(newFieldType);
+    const newField: CustomField = { 
+      id: `${prefix}${targetIndex}`, 
+      name: newFieldName, 
+      type: newFieldType 
+    };
+
     const updated = [...fields, newField];
     setFields(updated);
     setNewFieldName('');
@@ -249,6 +378,8 @@ export default function InventoryDetail() {
     const updated = fields.filter(f => f.id !== fieldId);
     setFields(updated);
     saveFieldsStructure(updated);
+    
+    // Удаляем это поле у локальных ассетов из стейта
     setItems(items.map(item => {
       const updatedValues = { ...item.values };
       delete updatedValues[fieldId];
@@ -402,7 +533,7 @@ export default function InventoryDetail() {
                       {field.type === 'text' ? (
                         <Textarea 
                           bg="white" _dark={{ bg: 'gray.800' }}
-                          value={(formValues && formValues[field.id] as string) || ''}
+                          value={(formValues && (formValues[field.id] as string)) || ''}
                           onChange={(e) => handleDynamicFormChange(field.id, e.target.value)}
                         />
                       ) : field.type === 'boolean' ? (
@@ -418,19 +549,19 @@ export default function InventoryDetail() {
                       ) : field.type === 'date' ? (
                         <Input 
                           type="date" bg="white" _dark={{ bg: 'gray.800' }}
-                          value={(formValues && formValues[field.id] as string) || ''}
+                          value={(formValues && (formValues[field.id] as string)) || ''}
                           onChange={(e) => handleDynamicFormChange(field.id, e.target.value)}
                         />
                       ) : field.type === 'integer' ? (
                         <Input 
                           type="number" step="1" bg="white" _dark={{ bg: 'gray.800' }}
-                          value={(formValues && formValues[field.id] as number) || ''}
+                          value={(formValues && (formValues[field.id] as number)) || ''}
                           onChange={(e) => handleDynamicFormChange(field.id, parseInt(e.target.value) || 0)}
                         />
                       ) : (
                         <Input 
                           type="text" bg="white" _dark={{ bg: 'gray.800' }}
-                          value={(formValues && formValues[field.id] as string) || ''}
+                          value={(formValues && (formValues[field.id] as string)) || ''}
                           onChange={(e) => handleDynamicFormChange(field.id, e.target.value)}
                         />
                       )}
@@ -447,7 +578,7 @@ export default function InventoryDetail() {
             </Box>
           )}
 
-          {/* ТАБЛИЦА С ЗАЩИТОЙ ОТ UNDEFINED */}
+          {/* ТАБЛИЦА */}
           {fields.length === 0 ? (
             <Box textStyle="sm" color="gray.500" py={8} textAlign="center" border="1px dashed" borderColor="gray.300" borderRadius="md">
               Конструктор полей пуст. Настройте структуру во второй вкладке.
