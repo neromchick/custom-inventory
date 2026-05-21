@@ -1,12 +1,13 @@
 import { Provider } from "./components/ui/provider"
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import Home from './pages/Home.tsx';
 import Login from './pages/Login.tsx';
 import OAuthCallback from './pages/OAuthCallback.tsx';
 
-const DashboardPlaceholder = () => (
+// Временная заглушка для страницы конкретного инвентаря
+const InventoryDetailsPlaceholder = () => (
   <div style={{ padding: '32px' }}>
-    <h1 style={{ fontSize: '24px', fontWeight: 'bold' }}>Панель управления CustomInventory</h1>
-    <p style={{ marginTop: '8px', color: '#4A5568' }}>Вы успешно вошли в систему!</p>
+    <h2>Внутренняя страница инвентаря со вкладками (В разработке)</h2>
   </div>
 );
 
@@ -15,10 +16,17 @@ export default function App() {
     <Provider>
       <BrowserRouter>
         <Routes>
+          {/* Главная страница теперь полноценный компонент Home */}
+          <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/oauth-callback" element={<OAuthCallback />} />
-          <Route path="/dashboard" element={<DashboardPlaceholder />} />
-          <Route path="*" element={<Navigate to="/login" replace />} />
+          
+          {/* Динамический роут для страницы конкретного инвентаря */}
+          <Route path="/inventory/:id" element={<InventoryDetailsPlaceholder />} />
+          
+          {/* Редиректы */}
+          <Route path="/dashboard" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
     </Provider>

@@ -7,30 +7,29 @@ export default function OAuthCallback() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Вытаскиваем JWT токен, который бэкенд зашил в URL
+    // Вытаскиваем токен из URL (например: ?token=XXXXX)
     const token = searchParams.get('token');
 
     if (token) {
-      localStorage.setItem('token', token); // Сохраняем в браузере
-      navigate('/dashboard'); // Переходим на главную
+      // Сохраняем в localStorage, чтобы фронтенд знал, что мы вошли
+      localStorage.setItem('token', token);
+      
+      // Перенаправляем на главную
+      navigate('/');
+      // Мягко обновляем страницу, чтобы пересчитался стейт isAuthenticated в Home.tsx
+      window.location.reload();
     } else {
-      navigate('/login'); // Если токена нет — возвращаем на логин
+      console.error('Токен авторизации не найден в URL');
+      alert('Ошибка авторизации. Возвращаемся на главную.');
+      navigate('/');
     }
   }, [searchParams, navigate]);
 
   return (
-    <Center minH="100vh" bg="gray.50">
-      <VStack spaceY={4}>
-        <Spinner 
-          color="blue.500" 
-          size="xl" 
-        />
-        <Text fontSize="xl" fontWeight="semibold" color="gray.700">
-          Авторизация в системе...
-        </Text>
-        <Text fontSize="sm" color="gray.500">
-          Пожалуйста, подождите
-        </Text>
+    <Center h="100vh" bg="gray.50">
+      <VStack gap={4}>
+        <Spinner size="xl" color="blue.500" borderWidth="4px" />
+        <Text fontSize="lg" fontWeight="semibold">Завершаем авторизацию...</Text>
       </VStack>
     </Center>
   );

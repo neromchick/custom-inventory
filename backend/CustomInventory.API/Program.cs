@@ -47,10 +47,10 @@ if (app.Environment.IsDevelopment())
 app.UseSwagger();
 app.UseSwaggerUI();
 
+app.UseCors("AllowFrontend");
+
 app.UseAuthentication();
 app.UseAuthorization();
-
-app.UseCors("AllowFrontend");
 
 app.MapControllers();
 
