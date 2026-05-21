@@ -50,6 +50,8 @@ app.UseSwaggerUI();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseCors("AllowFrontend");
+
 app.MapControllers();
 
 using (var scope = app.Services.CreateScope())
