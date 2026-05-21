@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -28,6 +28,8 @@ interface InventoryMock {
 }
 
 export default function Home() {  
+  const navigate = useNavigate();
+
   // Управление темами
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
   
@@ -35,7 +37,7 @@ export default function Home() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
-  // Состояния данных — изначально пустые, ждём базу
+  // Состояния данных
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!localStorage.getItem('token'));
   const [categories, setCategories] = useState<Category[]>([]);
   const [inventories, setInventories] = useState<InventoryMock[]>([]); 
@@ -85,30 +87,23 @@ export default function Home() {
     };
 
     try {
-      // Достаем токен, который сохранился при логине
       const token = localStorage.getItem('token');
 
       const response = await fetch('https://custom-inventory.onrender.com/api/inventory', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          // Передаем токен бэкенду для проверки авторизации
           'Authorization': `Bearer ${token}` 
         },
         body: JSON.stringify(newInventory)
       });
 
       if (!response.ok) {
-        // Если сервер вернул 401 или другую ошибку, выведем её статус
         throw new Error(`Сервер ответил со статусом: ${response.status}`);
       }
 
-      // Если всё ок, парсим ответ (даже если там пусто)
-      try {
-        await response.json();
-      } catch {
-        // Игнорируем ошибку парсинга, если бэкенд возвращает пустой контент (204 No Content)
-      }
+      // Парсим созданный объект, чтобы забрать его id
+      const createdData = await response.json();
 
       setIsCreateOpen(false);
       setTitle('');
@@ -116,8 +111,13 @@ export default function Home() {
       setCategoryId('');
       setIsPublic(true);
 
-      // Перезагружаем страницу, чтобы увидеть новый инвентарь в списке
-      window.location.reload();
+      // Если бэкенд успешно вернул объект с id, перенаправляем на страницу инвентаря
+      if (createdData && createdData.id) {
+        navigate(`/inventory/${createdData.id}`);
+      } else {
+        // Запасной вариант, если бэкенд возвращает пустой JSON
+        window.location.reload();
+      }
 
     } catch (err) {
       console.error("Ошибка при создании инвентаря:", err);
@@ -126,14 +126,14 @@ export default function Home() {
   };
 
   const filteredInventories = inventories.filter(inv =>
-    inv.title.toLowerCase().includes(searchQuery.toLowerCase())
+    inv.title?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Цветовая палитра на основе стейта темы
+  // Цветовая палитра на основе стейта темы (для Chakra v3)
   const bgColor = isDarkMode ? 'gray.900' : 'gray.50';
   const cardBg = isDarkMode ? 'gray.800' : 'white';
   const textColor = isDarkMode ? 'white' : 'gray.800';
-  const borderColor = isDarkMode ? 'gray.700' : 'gray.100';
+  const borderColor = isDarkMode ? 'gray.700' : 'gray.200';
 
   return (
     <Box bg={bgColor} color={textColor} minH="100vh" p={6} style={{ transition: 'all 0.2s' }}>
@@ -272,7 +272,7 @@ export default function Home() {
                   >
                     <option value="" disabled style={{ color: 'gray' }}>Выберите категорию</option>
                     {categories.map((cat) => (
-                      <option key={cat.id} value={cat.id} style={{ color: 'black' }}>{cat.name}</option>
+                      <option key={cat.id} value={cat.id} style={{ color: isDarkMode ? 'white' : 'black' }}>{cat.name}</option>
                     ))}
                   </select>
                 </Box>
@@ -286,15 +286,15 @@ export default function Home() {
                 <Box border="1px solid" borderColor={borderColor} p={3} borderRadius="lg">
                   <Text fontSize="sm" fontWeight="bold" mb={3}>Уровень доступа</Text>
                   <VStack align="flex-start" gap={3}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
-                      <input type="radio" name="privacy" checked={isPublic === true} onChange={() => setIsPublic(true)} />
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', width: '100%' }}>
+                      <input type="radio" name="privacy" checked={isPublic === true} onChange={() => setIsPublic(true)} style={{ cursor: 'pointer' }} />
                       <Box>
                         <Text fontSize="sm" fontWeight="bold">🌐 Public (Публичный)</Text>
                         <Text fontSize="xs" color="gray.500">Виден всем пользователям в режиме чтения.</Text>
                       </Box>
                     </label>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
-                      <input type="radio" name="privacy" checked={isPublic === false} onChange={() => setIsPublic(false)} />
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', width: '100%' }}>
+                      <input type="radio" name="privacy" checked={isPublic === false} onChange={() => setIsPublic(false)} style={{ cursor: 'pointer' }} />
                       <Box>
                         <Text fontSize="sm" fontWeight="bold">🔒 Private (Приватный)</Text>
                         <Text fontSize="xs" color="gray.500">Доступ только для создателя каталога.</Text>
