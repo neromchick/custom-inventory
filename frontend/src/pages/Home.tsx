@@ -194,7 +194,14 @@ const [currentUser, setCurrentUser] = useState<CurrentUser | null>(() => {
   const fetchMyInventories = useCallback(() => {
     if (!token || !currentUser) return;
     fetch(`${API}/api/inventory/my`, { headers: { 'Authorization': `Bearer ${token}` } })
-      .then(r => r.ok ? r.json() : [])
+      .then(r => {
+        // Если токен устарел или недействителен, бэкенд вернет 401 [3]
+        if (r.status === 401) {
+          localStorage.removeItem('token');
+          window.location.reload();
+        }
+        return r.ok ? r.json() : [];
+      })
       .then(setMyInventories)
       .catch(() => {});
   }, [token, currentUser]);
@@ -254,6 +261,50 @@ const [currentUser, setCurrentUser] = useState<CurrentUser | null>(() => {
       fetchMyInventories();
     } catch {
       alert('Не удалось удалить инвентарь.');
+    }
+  };
+
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingImage(true);
+
+    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+    const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+
+    if (!cloudName || !uploadPreset) {
+      alert("Ошибка: Не настроены переменные окружения Cloudinary в .env");
+      setIsUploadingImage(false);
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", uploadPreset);
+
+    try {
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Не удалось загрузить изображение в облако.");
+      }
+
+      const data = await response.json();
+      setFormImageUrl(data.secure_url); 
+    } catch (err) {
+      console.error("Cloudinary upload error:", err);
+      alert("Произошла ошибка при загрузке изображения на сервер.");
+    } finally {
+      setIsUploadingImage(false);
     }
   };
 
@@ -776,20 +827,27 @@ const [currentUser, setCurrentUser] = useState<CurrentUser | null>(() => {
                       type="file" 
                       accept="image/*" 
                       style={{ display: 'none' }} 
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          const url = URL.createObjectURL(file);
-                          setFormImageUrl(url);
-                        }
-                      }} 
+                      disabled={isUploadingImage} // Блокируем выбор нового файла во время загрузки
+                      onChange={handleFileChange} // Вызываем функцию отправки в Cloudinary [1]
                     />
                     <Button 
-                      as="span" colorScheme="blue" bg="blue.600" color="white" _hover={{ bg: 'blue.700' }}
-                      w="full" cursor="pointer" h="40px" borderRadius="md" boxShadow="sm"
-                      display="flex" alignItems="center" justifyContent="center" fontSize="14px" fontWeight="600"
+                      as="span" 
+                      colorScheme={isUploadingImage ? "gray" : "blue"} 
+                      bg={isUploadingImage ? "gray.500" : "blue.600"} 
+                      color="white" 
+                      _hover={{ bg: isUploadingImage ? "gray.500" : "blue.700" }}
+                      w="full" 
+                      cursor={isUploadingImage ? "not-allowed" : "pointer"} 
+                      h="40px" 
+                      borderRadius="md" 
+                      boxShadow="sm"
+                      display="flex" 
+                      alignItems="center" 
+                      justifyContent="center" 
+                      fontSize="14px" 
+                      fontWeight="600"
                     >
-                      Выбрать файл обложки
+                      {isUploadingImage ? "Загрузка в облако..." : "Выбрать файл обложки"}
                     </Button>
                   </label>
                   {formImageUrl && (
