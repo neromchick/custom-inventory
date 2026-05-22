@@ -1,8 +1,10 @@
-﻿using CustomInventory.Application.DTOs;
+﻿using AspNet.Security.OAuth.GitHub;
+using CustomInventory.API.Extensions;
+using CustomInventory.Application.DTOs;
 using CustomInventory.Application.Interfaces;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Google;
-using AspNet.Security.OAuth.GitHub;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -70,6 +72,17 @@ namespace CustomInventory.API.Controllers
             var frontendUrl = $"{frontendBaseUrl.TrimEnd('/')}/oauth-callback?token={token}";
 
             return Redirect(frontendUrl);
+        }
+
+        [HttpGet("me")]
+        [Authorize]
+        public IActionResult Me()
+        {
+            var id = User.GetUserId();
+            var email = User.FindFirst(ClaimTypes.Email)?.Value;
+            var name = User.FindFirst(ClaimTypes.Name)?.Value;
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            return Ok(new { id, email, name, role });
         }
     }
 }

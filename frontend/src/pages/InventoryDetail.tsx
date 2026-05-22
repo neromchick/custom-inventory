@@ -251,26 +251,25 @@ export default function InventoryDetail() {
 
   // 3. МАССОВОЕ УДАЛЕНИЕ ПРЕДМЕТОВ ИЗ БД
   const handleDeleteSelectedItems = async () => {
-    if (!window.confirm(`Вы уверены, что хотите удалить выбранные предметы (${selectedItemIds.length} шт.)?`)) return;
-    const token = localStorage.getItem('token');
+  if (!window.confirm(`Вы уверены, что хотите удалить выбранные предметы (${selectedItemIds.length} шт.)?`)) return;
+  const token = localStorage.getItem('token');
 
-    try {
-      const res = await fetch(`https://custom-inventory.onrender.com/api/items/bulk-delete`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ ids: selectedItemIds })
-      });
-      if (!res.ok) throw new Error();
-
-      setItems(items.filter(item => !selectedItemIds.includes(item.id)));
-      setSelectedItemIds([]);
-      showNotification("Выбранные элементы удалены из БД.");
-    } catch {
-      setItems(items.filter(item => !selectedItemIds.includes(item.id)));
-      setSelectedItemIds([]);
-      showNotification("Удалено локально (ошибка бэкенда)", "success");
-    }
-  };
+  try {
+    await Promise.all(
+      selectedItemIds.map(itemId =>
+        fetch(`https://custom-inventory.onrender.com/api/inventories/${id}/items/${itemId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` },
+        })
+      )
+    );
+    setItems(items.filter(item => !selectedItemIds.includes(item.id)));
+    setSelectedItemIds([]);
+    showNotification("Выбранные элементы удалены.");
+  } catch {
+    showNotification("Ошибка при удалении.", "error");
+  }
+};
 
   const handleSelectAll = (checked: boolean) => {
     setSelectedItemIds(checked ? items.map(item => item.id) : []);
@@ -379,7 +378,6 @@ export default function InventoryDetail() {
     setFields(updated);
     saveFieldsStructure(updated);
     
-    // Удаляем это поле у локальных ассетов из стейта
     setItems(items.map(item => {
       const updatedValues = { ...item.values };
       delete updatedValues[fieldId];
@@ -421,14 +419,33 @@ export default function InventoryDetail() {
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setPreviewUrl(url);
-      showNotification("Файл выбран. Нажмите 'Сохранить', чтобы загрузить в Cloudinary!");
-    }
-  };
+  // Новый handleFileChange — сразу загружает в Cloudinary
+const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  // Показываем локальный превью пока грузится
+  setPreviewUrl(URL.createObjectURL(file));
+  showNotification("Загружаем изображение...");
+
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', 'inventory_preset'); 
+    formData.append('cloud_name', 'dvtkbe5h0');       
+
+    const res = await fetch(
+      `https://api.cloudinary.com/v1_1/dvtkbe5h0/image/upload`, 
+      { method: 'POST', body: formData }
+    );
+    const data = await res.json();
+    
+    setPreviewUrl(data.secure_url);
+    showNotification("Изображение загружено! Нажмите 'Сохранить'.");
+  } catch {
+    showNotification("Ошибка загрузки изображения.", "error");
+  }
+};
 
   if (loading) return <Center h="100vh"><Spinner size="xl" /></Center>;
 
