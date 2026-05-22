@@ -22,13 +22,13 @@ builder.Services.AddApplicationServices();
 builder.Services.AddSwagger();
 builder.Services.AddJwtServices(builder.Configuration);
 
-var allowedOrigins = builder.Configuration["Cors:AllowedOrigins"]?.Split(",")
-    ?? ["http://localhost:5173"];
+var allowedOrigins = builder.Configuration["Cors:AllowedOrigins"]
+    ?.Split(",", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
-        policy.WithOrigins(allowedOrigins)
+        policy.WithOrigins(allowedOrigins!)
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials());
