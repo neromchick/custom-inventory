@@ -1,4 +1,5 @@
-﻿using CustomInventory.Domain.Entities;
+﻿using CustomInventory.Application.Interfaces;
+using CustomInventory.Domain.Entities;
 using CustomInventory.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 

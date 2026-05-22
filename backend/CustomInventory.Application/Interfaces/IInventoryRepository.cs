@@ -1,6 +1,6 @@
 ﻿using CustomInventory.Domain.Entities;
 
-namespace CustomInventory.Application.Repositories
+namespace CustomInventory.Application.Interfaces
 {
     public interface IInventoryRepository
     {

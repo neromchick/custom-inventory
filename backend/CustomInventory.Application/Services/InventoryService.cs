@@ -2,7 +2,6 @@
 using CustomInventory.Application.DTOs;
 using CustomInventory.Application.Interfaces;
 using CustomInventory.Domain.Entities;
-using CustomInventory.Application.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -29,7 +28,7 @@ namespace CustomInventory.Application.Services
         {
             var inventory = await _repository.GetByIdAsync(id);
 
-            if (!inventory.IsPublic && inventory.CreatorId != currentUserId && !isAdmin)
+            if (!inventory!.IsPublic && inventory.CreatorId != currentUserId && !isAdmin)
                 throw new UnauthorizedAccessException("This inventory is private.");
 
             return _mapper.Map<InventoryResponseDto>(inventory);

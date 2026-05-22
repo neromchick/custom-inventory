@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using CustomInventory.Application.DTOs;
 using CustomInventory.Application.Interfaces;
-using CustomInventory.Application.Repositories;
 using CustomInventory.Domain.Entities;
 using System;
 using System.Collections.Generic;
