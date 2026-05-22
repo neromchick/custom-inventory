@@ -7,23 +7,19 @@ export default function OAuthCallback() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Вытаскиваем токен из URL (например: ?token=XXXXX)
     const token = searchParams.get('token');
 
     if (token) {
-      // Сохраняем в localStorage, чтобы фронтенд знал, что мы вошли
       localStorage.setItem('token', token);
-      
-      // Перенаправляем на главную
-      navigate('/');
-      // Мягко обновляем страницу, чтобы пересчитался стейт isAuthenticated в Home.tsx
-      window.location.reload();
+      navigate('/', { replace: true });
     } else {
       console.error('Токен авторизации не найден в URL');
       alert('Ошибка авторизации. Возвращаемся на главную.');
       navigate('/');
     }
-  }, [searchParams, navigate]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // Пустой массив — эффект срабатывает один раз при маунте.
+  // searchParams и navigate стабильны, повторный запуск не нужен.
 
   return (
     <Center h="100vh" bg="gray.50">

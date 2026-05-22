@@ -1,5 +1,6 @@
 ﻿using CustomInventory.Application.DTOs;
 using CustomInventory.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CustomInventory.API.Controllers
@@ -23,6 +24,7 @@ namespace CustomInventory.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateAsync(CreateCategoryDto dto)
         {
             var created = await _service.CreateAsync(dto);
@@ -30,6 +32,7 @@ namespace CustomInventory.API.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteAsync(int id)
         {
             var category = await _service.DeleteAsync(id);

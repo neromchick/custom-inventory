@@ -1,6 +1,7 @@
 ﻿using CustomInventory.API.Extensions;
 using CustomInventory.Application.DTOs;
 using CustomInventory.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CustomInventory.API.Controllers
@@ -31,6 +32,7 @@ namespace CustomInventory.API.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> CreateAsync(Guid inventoryId, CreateItemDto dto)
         {
             var creatorId = User.GetUserId();
@@ -39,6 +41,7 @@ namespace CustomInventory.API.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize]
         public async Task<IActionResult> UpdateAsync(Guid inventoryId, Guid id, CreateItemDto dto)
         {
             var updated = await _service.UpdateAsync(inventoryId, id, dto);
@@ -46,6 +49,7 @@ namespace CustomInventory.API.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<IActionResult> DeleteAsync(Guid inventoryId, Guid id)
         {
             var result = await _service.DeleteAsync(inventoryId, id);

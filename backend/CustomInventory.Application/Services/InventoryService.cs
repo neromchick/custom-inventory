@@ -2,7 +2,7 @@
 using CustomInventory.Application.DTOs;
 using CustomInventory.Application.Interfaces;
 using CustomInventory.Domain.Entities;
-using CustomInventory.Infrastructure.Repositories;
+using CustomInventory.Application.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -28,9 +28,6 @@ namespace CustomInventory.Application.Services
         public async Task<InventoryResponseDto> GetByIdAsync(Guid id, string? currentUserId, bool isAdmin)
         {
             var inventory = await _repository.GetByIdAsync(id);
-
-            if (inventory == null)
-                throw new KeyNotFoundException("Inventory not found");
 
             if (!inventory.IsPublic && inventory.CreatorId != currentUserId && !isAdmin)
                 throw new UnauthorizedAccessException("This inventory is private.");
@@ -82,10 +79,10 @@ namespace CustomInventory.Application.Services
             var inventory = await _repository.GetByIdAsync(id);
 
             if (inventory == null)
-                throw new Exception("Инвентарь не найден");
+                throw new KeyNotFoundException("Инвентарь не найден");
 
             if (!isAdmin && inventory.CreatorId != currentUserId)
-                throw new Exception("Недостаточно прав для удаления инвентаря");
+                throw new UnauthorizedAccessException("Недостаточно прав для удаления инвентаря");
 
             return await _repository.DeleteAsync(id);
         }

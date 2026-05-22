@@ -5,9 +5,10 @@ using CustomInventory.Application.Services;
 using CustomInventory.Domain.Entities;
 using CustomInventory.Infrastructure.Data;
 using CustomInventory.Infrastructure.Repositories;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,15 +22,16 @@ builder.Services.AddApplicationServices();
 builder.Services.AddSwagger();
 builder.Services.AddJwtServices(builder.Configuration);
 
+var allowedOrigins = builder.Configuration["Cors:AllowedOrigins"]?.Split(",")
+    ?? ["http://localhost:5173"];
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
-    {
-        policy.WithOrigins("http://localhost:5173") 
+        policy.WithOrigins(allowedOrigins)
               .AllowAnyHeader()
               .AllowAnyMethod()
-              .AllowCredentials(); 
-    });
+              .AllowCredentials());
 });
 
 var app = builder.Build();

@@ -2,7 +2,7 @@
 using CustomInventory.Application.DTOs;
 using CustomInventory.Application.Interfaces;
 using CustomInventory.Domain.Entities;
-using CustomInventory.Infrastructure.Repositories;
+using CustomInventory.Application.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Text;
