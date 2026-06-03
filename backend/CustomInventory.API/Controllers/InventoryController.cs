@@ -148,7 +148,12 @@ namespace CustomInventory.API.Controllers
             });
 
             var res = await http.PostAsync("https://login.salesforce.com/services/oauth2/token", content);
-            if (!res.IsSuccessStatusCode) return null;
+            if (!res.IsSuccessStatusCode)
+            {
+                var error = await res.Content.ReadAsStringAsync();
+                Console.WriteLine($"Salesforce auth error: {res.StatusCode} - {error}");
+                return null;
+            }
 
             var json = await res.Content.ReadFromJsonAsync<JsonElement>();
             return (json.GetProperty("access_token").GetString()!, json.GetProperty("instance_url").GetString()!);
