@@ -1,16 +1,18 @@
 import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Center, Spinner, Text, VStack } from '@chakra-ui/react';
+import { useAuth } from '../context/AuthContext';
 
 export default function OAuthCallback() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   useEffect(() => {
     const token = searchParams.get('token');
 
     if (token) {
-      localStorage.setItem('token', token);
+      login(token);
       navigate('/', { replace: true });
     } else {
       console.error('Токен авторизации не найден в URL');
@@ -18,8 +20,6 @@ export default function OAuthCallback() {
       navigate('/');
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  // Пустой массив — эффект срабатывает один раз при маунте.
-  // searchParams и navigate стабильны, повторный запуск не нужен.
 
   return (
     <Center h="100vh" bg="gray.50">

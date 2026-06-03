@@ -5,6 +5,7 @@ using CustomInventory.Application.Services;
 using CustomInventory.Domain.Entities;
 using CustomInventory.Infrastructure.Data;
 using CustomInventory.Infrastructure.Repositories;
+using CustomInventory.Infrastructure.Seeders;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -35,6 +36,12 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    await RoleSeeder.SeedAsync(roleManager);
+}
 
 app.UseForwardedHeaders(new ForwardedHeadersOptions
 {

@@ -4,20 +4,29 @@ import Home from './pages/Home.tsx';
 import Login from './pages/Login.tsx';
 import OAuthCallback from './pages/OAuthCallback.tsx';
 import InventoryDetail from './pages/InventoryDetail';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import AdminPage from './pages/AdminPage';
 
 export default function App() {
   return (
     <Provider>
+      <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/oauth-callback" element={<OAuthCallback />} />
-          <Route path="/inventory/:id" element={<InventoryDetail />} />
-          <Route path="/dashboard" element={<Navigate to="/" replace />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/oauth-callback" element={<OAuthCallback />} />
+        <Route path="/inventory/:id" element={<InventoryDetail />} />
+        <Route path="/admin" element={
+          <ProtectedRoute adminOnly>
+            <AdminPage />
+          </ProtectedRoute>
+        } />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
       </BrowserRouter>
+      </AuthProvider>
     </Provider>
   );
 }

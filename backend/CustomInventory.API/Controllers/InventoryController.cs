@@ -19,12 +19,12 @@ namespace CustomInventory.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllAsync()
+        public async Task<IActionResult> GetAllAsync([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
         {
             var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             bool isAdmin = User.IsInRole("Admin");
 
-            var inventories = await _service.GetAllAsync(currentUserId, isAdmin);
+            var inventories = await _service.GetAllAsync(currentUserId, isAdmin, page, pageSize);
 
             return Ok(inventories);
         }

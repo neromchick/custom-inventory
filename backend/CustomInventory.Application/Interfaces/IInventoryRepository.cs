@@ -6,7 +6,7 @@ namespace CustomInventory.Application.Interfaces
     {
         Task<Inventory> CreateAsync(Inventory inventory);
         Task<bool> DeleteAsync(Guid id);
-        Task<List<Inventory>> GetAllAsync(string? currentUserId, bool isAdmin);
+        Task<List<Inventory>> GetAllAsync(string? currentUserId, bool isAdmin, int page, int pageSize);
         Task<Inventory?> GetByIdAsync(Guid id);
         Task<List<Inventory>> GetByUserIdAsync(string userId);
         Task<Inventory> UpdateAsync(Inventory inventory);

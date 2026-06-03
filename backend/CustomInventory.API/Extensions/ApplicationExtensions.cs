@@ -18,6 +18,7 @@ namespace CustomInventory.API.Extensions
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IJwtTokenService, JwtTokenService>();
+            services.AddScoped<IUserService, UserService>();
             services.AddAutoMapper(cfg => { }, typeof(InventoryProfile).Assembly);
             return services;
         }

@@ -26,10 +26,9 @@ public class AuthService : IAuthService
         var result = await _userManager.CreateAsync(user, dto.Password);
         if (!result.Succeeded) return null;
 
-        await _userManager.AddToRoleAsync(user, "User"); // CHECKCHECKCHECKCHECKCHECKCHECK
+        await _userManager.AddToRoleAsync(user, "User");
 
         var roles = await _userManager.GetRolesAsync(user);
-
         return _jwtTokenService.GenerateToken(user, roles);
     }
 
@@ -38,11 +37,12 @@ public class AuthService : IAuthService
         var user = await _userManager.FindByEmailAsync(dto.Email);
         if (user == null) return null;
 
+        if (await _userManager.IsLockedOutAsync(user)) return null;
+
         var isValid = await _userManager.CheckPasswordAsync(user, dto.Password);
         if (!isValid) return null;
 
         var roles = await _userManager.GetRolesAsync(user);
-
         return _jwtTokenService.GenerateToken(user, roles);
     }
 

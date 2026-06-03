@@ -13,15 +13,18 @@ namespace CustomInventory.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<List<Inventory>> GetAllAsync(string? currentUserId, bool isAdmin)
+        public async Task<List<Inventory>> GetAllAsync(string? currentUserId, bool isAdmin, int page = 1, int pageSize = 20)
         {
-            var query = _context.Inventories.AsQueryable();
+            var query = _context.Inventories.AsQueryable(); 
 
             if (!isAdmin)
                 query = query.Where(i => i.IsPublic || i.CreatorId == currentUserId);
 
             return await query
                 .Include(i => i.Category)
+                .OrderByDescending(i => i.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
         }
 

@@ -18,9 +18,9 @@ namespace CustomInventory.Application.Services
             _mapper = mapper;
         }
 
-        public async Task<List<InventoryResponseDto>> GetAllAsync(string? currentUserId, bool isAdmin)
+        public async Task<List<InventoryResponseDto>> GetAllAsync(string? currentUserId, bool isAdmin, int page, int pageSize)
         {
-            var inventories = await _repository.GetAllAsync(currentUserId, isAdmin);
+            var inventories = await _repository.GetAllAsync(currentUserId, isAdmin, page, pageSize);
             return _mapper.Map<List<InventoryResponseDto>>(inventories);
         }
 
