@@ -28,6 +28,7 @@ interface CurrentUser {
   id: string;
   userName: string;
   email: string;
+  role?: string;
 }
 
 type SortKey = 'title' | 'createdAt' | 'category' | 'visibility';
@@ -93,7 +94,8 @@ const [currentUser, setCurrentUser] = useState<CurrentUser | null>(() => {
         const email = decoded.email || decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"] || "";
         const userName = decoded.userName || decoded.username || decoded.name || decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] || email.split('@')[0] || "User";
         const id = decoded.id || decoded.sub || decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"] || "";
-        return { id, userName, email };
+        const role = decoded.role || decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || "";
+        return { id, userName, email, role };
       }
     }
     return null;
@@ -499,6 +501,18 @@ const [currentUser, setCurrentUser] = useState<CurrentUser | null>(() => {
                     >
                       👤 Мои инвентари
                     </Box>
+
+                    {currentUser?.role === 'Admin' && (
+                    <Box
+                        px={4} py={3}
+                        style={{ cursor: 'pointer', fontSize: '14px', fontWeight: 500 }}
+                        _hover={{ bg: isDark ? '#252836' : '#f0f4ff' }}
+                        onClick={() => { navigate('/admin'); setUserMenuOpen(false); }}
+                      >
+                        ⚙️ Админка
+                    </Box>
+                    )}
+
                     <Box
                       px={4} py={3}
                       style={{ cursor: 'pointer', fontSize: '14px', color: '#e53e3e', fontWeight: 500 }}
