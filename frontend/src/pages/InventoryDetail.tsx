@@ -73,6 +73,12 @@ export default function InventoryDetail() {
   const [newFieldName, setNewFieldName] = useState('');
   const [newFieldType, setNewFieldType] = useState<FieldType>('string');
 
+  const [ticketSummary, setTicketSummary] = useState('');
+  const [ticketDescription, setTicketDescription] = useState('');
+  const [ticketPriority, setTicketPriority] = useState('Average');
+  const [ticketLoading, setTicketLoading] = useState(false);
+  const [ticketSent, setTicketSent] = useState(false);
+
   const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
     setNotification({ message, type });
     setTimeout(() => setNotification(null), 4000);
@@ -167,6 +173,28 @@ export default function InventoryDetail() {
       isMounted = false;
     };
   }, [id]);
+
+  const handleCreateTicket = async () => {
+  const token = localStorage.getItem('token');
+  if (!token) return;
+  setTicketLoading(true);
+  try {
+    const res = await fetch(`https://custom-inventory.onrender.com/api/inventory/${id}/support-ticket`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ summary: ticketSummary, description: ticketDescription, priority: ticketPriority })
+    });
+    if (!res.ok) throw new Error();
+    setTicketSent(true);
+    setTicketSummary('');
+    setTicketDescription('');
+    setTicketPriority('Average');
+  } catch {
+    alert('Ошибка при отправке тикета.');
+  } finally {
+    setTicketLoading(false);
+  }
+};
 
   const handleDynamicFormChange = (fieldId: string, value: string | number | boolean) => {
     setFormValues(prev => ({ ...prev, [fieldId]: value }));
@@ -490,12 +518,13 @@ const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         </HStack>
       </VStack>
 
-      <Tabs.Root defaultValue="items" variant="enclosed">
-        <Tabs.List borderBottom="1px solid" borderColor="gray.200">
-          <Tabs.Trigger value="items" fontWeight="bold" py={3}>Предметы</Tabs.Trigger>
-          <Tabs.Trigger value="fields" fontWeight="bold" py={3}>Поля (Конструктор)</Tabs.Trigger>
-          <Tabs.Trigger value="settings" fontWeight="bold" py={3}>Настройки</Tabs.Trigger>
-        </Tabs.List>
+    <Tabs.Root defaultValue="items" variant="enclosed">
+  <Tabs.List borderBottom="1px solid" borderColor="gray.200">
+    <Tabs.Trigger value="items" fontWeight="bold" py={3}>Предметы</Tabs.Trigger>
+    <Tabs.Trigger value="fields" fontWeight="bold" py={3}>Поля (Конструктор)</Tabs.Trigger>
+    <Tabs.Trigger value="settings" fontWeight="bold" py={3}>Настройки</Tabs.Trigger>
+    <Tabs.Trigger value="ticket" fontWeight="bold" py={3}>🆘 Поддержка</Tabs.Trigger>
+  </Tabs.List>
 
         {/* 1. ВКЛАДКА: ПРЕДМЕТЫ */}
         <Tabs.Content value="items" p={6} borderWidth="1px" borderRadius="md" mt={4} bg="white" borderColor="gray.200">
@@ -767,6 +796,57 @@ const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
             </VStack>
           </SimpleGrid>
         </Tabs.Content>
+
+        <Tabs.Content value="ticket" p={6} borderWidth="1px" borderRadius="md" mt={4} bg="white" borderColor="gray.200">
+          <Heading size="md" mb={6}>🆘 Создать тикет поддержки</Heading>
+          <VStack gap={4} maxW="500px">
+            <Box w="100%">
+              <Text fontSize="sm" fontWeight="bold" mb={1}>Тема *</Text>
+              <Input
+                placeholder="Кратко опишите проблему..."
+                value={ticketSummary}
+                onChange={(e) => setTicketSummary(e.target.value)}
+              />
+            </Box>
+            <Box w="100%">
+              <Text fontSize="sm" fontWeight="bold" mb={1}>Описание *</Text>
+              <Textarea
+                placeholder="Подробное описание проблемы..."
+                value={ticketDescription}
+                onChange={(e) => setTicketDescription(e.target.value)}
+                rows={4}
+              />
+            </Box>
+            <Box w="100%">
+              <Text fontSize="sm" fontWeight="bold" mb={1}>Приоритет</Text>
+              <select
+                value={ticketPriority}
+                onChange={(e) => setTicketPriority(e.target.value)}
+                style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #e2e8f0' }}
+              >
+                <option value="Low">🟢 Низкий</option>
+                <option value="Average">🟡 Средний</option>
+                <option value="High">🔴 Высокий</option>
+              </select>
+            </Box>
+            {ticketSent && (
+              <Box w="100%" p={3} bg="green.50" borderRadius="md" borderWidth="1px" borderColor="green.200">
+                <Text color="green.700" fontSize="sm">✅ Тикет успешно отправлен!</Text>
+              </Box>
+            )}
+            <Button
+              colorScheme="red"
+              w="100%"
+              disabled={ticketLoading || !ticketSummary}
+              onClick={handleCreateTicket}
+              bg="red.500"
+              color="white"
+            >
+              {ticketLoading ? 'Отправка...' : 'Отправить тикет'}
+            </Button>
+          </VStack>
+        </Tabs.Content>
+
       </Tabs.Root>
     </Box>
   );

@@ -11,20 +11,22 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const { user: currentUser } = useAuth();
 
-  const load = async () => {
-    setLoading(true);
-    const data = await getUsers();
-    setUsers(data);
-    setLoading(false);
-  };
+  const load = async (showSpinner = false) => {
+  if (showSpinner) setLoading(true);
+  const data = await getUsers();
+  setUsers(data);
+  setLoading(false);
+};
+// eslint-disable-next-line react-hooks/set-state-in-effect
+useEffect(() => { load(true); }, []);
+
+const handle = async (action: () => Promise<unknown>) => {
+  await action();
+  await load(); // без спиннера — таблица просто тихо обновится
+};
 
 // eslint-disable-next-line react-hooks/set-state-in-effect
-useEffect(() => { load(); }, []);
 
-  const handle = async (action: () => Promise<unknown>) => {
-    await action();
-    await load();
-  };
 
   if (loading) return <Center h="100vh"><Spinner size="xl" /></Center>;
 

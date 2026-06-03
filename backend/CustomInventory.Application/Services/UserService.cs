@@ -68,6 +68,7 @@ namespace CustomInventory.Application.Services
             var user = await _userManager.FindByIdAsync(id);
             if (user == null) return false;
 
+            await _userManager.RemoveFromRoleAsync(user, "User");
             await _userManager.AddToRoleAsync(user, "Admin");
             return true;
         }
@@ -76,8 +77,8 @@ namespace CustomInventory.Application.Services
         {
             var user = await _userManager.FindByIdAsync(id);
             if (user == null) return false;
-
             await _userManager.RemoveFromRoleAsync(user, "Admin");
+            await _userManager.AddToRoleAsync(user, "User");
             return true;
         }
     }
