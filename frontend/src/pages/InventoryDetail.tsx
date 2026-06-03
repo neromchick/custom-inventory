@@ -499,7 +499,7 @@ const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
           </Button>
         </RouterLink>
         
-        <HStack w="100%" justify="space-between" align="center" wrap="wrap" gap={6} p={4} borderWidth="1px" borderRadius="xl" bg="white" borderColor="gray.200">
+        <HStack w="100%" justify="space-between" align="center" wrap="wrap" gap={6} p={4} borderWidth="1px" borderRadius="xl" bg={{ base: 'white', _dark: 'gray.800' }} borderColor={{ base: 'gray.200', _dark: 'gray.600' }}>
           <HStack gap={5} align="center">
             <Box w="100px" h="100px" borderRadius="lg" overflow="hidden" border="1px solid" borderColor="gray.300" bg="gray.50" flexShrink={0}>
               {previewUrl ? <Image src={previewUrl} alt="Inventory" w="100%" h="100%" objectFit="cover" /> : <Center h="100%" color="gray.400" fontSize="xs">Нет фото</Center>}
@@ -527,7 +527,7 @@ const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
   </Tabs.List>
 
         {/* 1. ВКЛАДКА: ПРЕДМЕТЫ */}
-        <Tabs.Content value="items" p={6} borderWidth="1px" borderRadius="md" mt={4} bg="white" borderColor="gray.200">
+        <Tabs.Content value="items" p={6} borderWidth="1px" borderRadius="md" mt={4} bg={{ base: 'white', _dark: 'gray.800' }} borderColor={{ base: 'gray.200', _dark: 'gray.600' }}>
           
           <HStack justify="space-between" mb={6} wrap="wrap" gap={4}>
             <HStack gap={3}>
@@ -566,7 +566,7 @@ const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
 
           {/* ДИНАМИЧЕСКАЯ ФОРМА */}
           {isFormOpen && (
-            <Box mb={8} p={5} borderWidth="1px" borderRadius="lg" bg="gray.50" _dark={{ bg: 'gray.900' }}>
+            <Box mb={8} p={5} borderWidth="1px" borderRadius="lg" bg={{ base: 'gray.50', _dark: 'gray.700' }} _dark={{ bg: 'gray.900' }}>
               <Heading size="xs" textTransform="uppercase" color="gray.500" mb={4}>
                 {editingItemId ? 'Редактирование записи' : 'Новая запись'}
               </Heading>
@@ -678,7 +678,7 @@ const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         </Tabs.Content>
 
         {/* 2. ВКЛАДКА: КОНСТРУКТОР ПОЛЕЙ */}
-        <Tabs.Content value="fields" p={6} borderWidth="1px" borderRadius="md" mt={4} bg="white" borderColor="gray.200">
+        <Tabs.Content value="fields" p={6} borderWidth="1px" borderRadius="md" mt={4} bg={{ base: 'white', _dark: 'gray.800' }} borderColor={{ base: 'gray.200', _dark: 'gray.600' }}>
           <Heading size="md" mb={2}>Кастомная структура ассетов</Heading>
           <Text mb={6} color="gray.500" fontSize="sm">Вы можете добавить до 3 полей каждого типа.</Text>
           
@@ -741,7 +741,7 @@ const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         </Tabs.Content>
 
         {/* 3. ВКЛАДКА: НАСТРОЙКИ */}
-        <Tabs.Content value="settings" p={6} borderWidth="1px" borderRadius="md" mt={4} bg="white" borderColor="gray.200">
+        <Tabs.Content value="settings" p={6} borderWidth="1px" borderRadius="md" mt={4} bg={{ base: 'white', _dark: 'gray.800' }} borderColor={{ base: 'gray.200', _dark: 'gray.600' }}>
           <Heading size="md" mb={6}>Редактирование параметров каталога</Heading>
           
           <SimpleGrid columns={{ base: 1, md: 2 }} gap={8}>
@@ -797,7 +797,7 @@ const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
           </SimpleGrid>
         </Tabs.Content>
 
-        <Tabs.Content value="ticket" p={6} borderWidth="1px" borderRadius="md" mt={4} bg="white" borderColor="gray.200">
+        <Tabs.Content value="ticket" p={6} borderWidth="1px" borderRadius="md" mt={4} bg={{ base: 'white', _dark: 'gray.800' }} borderColor={{ base: 'gray.200', _dark: 'gray.600' }}>
           <Heading size="md" mb={6}>🆘 Создать тикет поддержки</Heading>
           <VStack gap={4} maxW="500px">
             <Box w="100%">
